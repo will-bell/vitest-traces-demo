@@ -1,5 +1,5 @@
-import { TicketStore } from "./ticket.mjs";
-import { setupOtel, setupFastifyOtelPlugin } from "./tracing.mjs";
+import { TicketStore } from "./ticket";
+import { setupOtel, setupFastifyOtelPlugin } from "./tracing";
 const [provider, _] = setupOtel("ticket-service");
 const fastifyInstrumentation = setupFastifyOtelPlugin(
   provider,
@@ -13,13 +13,6 @@ await app.register(fastifyInstrumentation.plugin());
 const ticketStore = new TicketStore();
 
 app.post("/ticket", (req, res) => {});
-
 app.post("/ticket/transfer", (req, res) => {});
 
-app.listen({ port: 3000 }, function (err, address) {
-  if (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
-  // Server is now listening on ${address}
-});
+export default app;

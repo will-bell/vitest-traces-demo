@@ -1,8 +1,13 @@
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { Ticket, TicketStore } from "./ticket";
+import { setupOtel } from "./tracing";
+import { InMemorySpanExporter } from "@opentelemetry/sdk-trace-base";
+import { Span, trace, Tracer } from "@opentelemetry/api";
 
 describe("basic ticket store operations", () => {
   let ticketStore: TicketStore;
+  let exporter: InMemorySpanExporter;
+  let tracer: Tracer;
 
   // Some reusable constants for event and user IDs
   const event = "eventId";
@@ -10,19 +15,42 @@ describe("basic ticket store operations", () => {
   const user2 = "user2Id";
   const user3 = "user3Id";
 
+  beforeAll(() => {
+    const [, _exporter] = setupOtel("test-ticket-provider");
+    exporter = _exporter as InMemorySpanExporter;
+    tracer = trace.getTracer("test-ticket-provider");
+  });
+
   beforeEach(() => {
     ticketStore = new TicketStore();
   });
 
   test("tickets can be added to the ticket store", () => {
-    const ticketId = ticketStore.createTicket(event, user1);
+    let ticketId: string = "";
+    let ticket: Ticket;
 
-    const ticket: Ticket = ticketStore.getTicket(ticketId);
-    expect(ticket).toMatchObject({
-      id: ticketId,
-      owner: user1,
-      event: event,
-      sharedWith: null,
+    tracer.startActiveSpan("add-ticket", (span: Span) => {
+      ticketId = ticketStore.createTicket(event, user1);
+
+      ticket = ticketStore.getTicket(ticketId);
+      expect(ticket).toMatchObject({
+        id: ticketId,
+        owner: user1,
+        event: event,
+        sharedWith: null,
+      });
+
+      span.end();
+    });
+
+    const spans = exporter.getFinishedSpans();
+    expect(spans[0].events[0]).toMatchObject({
+      name: "createTicket",
+      attributes: {
+        id: ticketId,
+        owner: user1,
+        event: event,
+      },
     });
   });
 

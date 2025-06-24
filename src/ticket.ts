@@ -1,8 +1,10 @@
+import { trace } from "@opentelemetry/api";
+
 export type Ticket = {
   id: string;
   event: string;
   owner: string;
-  sharedWith: string;
+  sharedWith: string | null;
 };
 
 const tickets: Record<string, Ticket> = {};
@@ -23,6 +25,8 @@ export class TicketStore {
   // workflow methods
 
   createTicket(event: string, owner: string): string {
+    const activeSpan = trace.getActiveSpan();
+
     const id = crypto.randomUUID();
     tickets[id] = {
       id,
@@ -30,6 +34,8 @@ export class TicketStore {
       owner,
       sharedWith: null,
     };
+
+    activeSpan?.addEvent("createTicket", { id, event, owner });
     return id;
   }
 

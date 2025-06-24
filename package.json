@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "server": "tsc ./src/index.ts",
+    "server:dev": "tsx src/index.ts --dev",
     "test": "vitest",
     "test:unit": "vitest src/"
   },
@@ -14,7 +14,7 @@
     "eslint-plugin-prettier": "^5.4.1",
     "eslint-plugin-tsdoc": "^0.4.0",
     "prettier": "^3.5.3",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
@@ -29,8 +29,6 @@
     "@opentelemetry/sdk-trace-base": "^1.27.0",
     "@opentelemetry/sdk-trace-node": "^1.27.0",
     "@opentelemetry/semantic-conventions": "^1.27.0",
-    "axios": "^1.6.0",
-    "express": "^4.17.1",
     "fastify": "^5.4.0",
     "typescript-eslint": "^8.34.1"
   }
