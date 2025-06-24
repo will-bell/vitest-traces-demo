@@ -1,4 +1,5 @@
 import { trace } from "@opentelemetry/api";
+import crypto from "node:crypto";
 
 export type Ticket = {
   id: string;
@@ -7,7 +8,6 @@ export type Ticket = {
   sharedWith: string | null;
 };
 
-const tickets: Record<string, Ticket> = {};
 
 export class TicketStore {
   tickets: Record<string, Ticket>;
@@ -19,7 +19,7 @@ export class TicketStore {
   // admin methods
 
   getTicket(ticketId: string): Ticket {
-    return tickets[ticketId];
+    return this.tickets[ticketId];
   }
 
   // workflow methods
@@ -28,7 +28,7 @@ export class TicketStore {
     const activeSpan = trace.getActiveSpan();
 
     const id = crypto.randomUUID();
-    tickets[id] = {
+    this.tickets[id] = {
       id,
       event,
       owner,
@@ -40,12 +40,12 @@ export class TicketStore {
   }
 
   shareTicket(id: string, from: string, to: string) {
-    const ticket = tickets[id];
+    const ticket = this.tickets[id];
     if (from !== ticket.owner) {
       throw new Error("a ticket can only be shared by its owner");
     }
 
-    tickets[id] = {
+    this.tickets[id] = {
       id,
       event: ticket.event,
       owner: from,
@@ -54,7 +54,7 @@ export class TicketStore {
   }
 
   acceptTicket(id: string, to: string) {
-    const ticket = tickets[id];
+    const ticket = this.tickets[id];
     if (!ticket.sharedWith) {
       throw new Error("ticket has not been shared");
     }
@@ -64,7 +64,7 @@ export class TicketStore {
       );
     }
 
-    tickets[id] = {
+    this.tickets[id] = {
       id,
       event: ticket.event,
       owner: to,
@@ -73,7 +73,7 @@ export class TicketStore {
   }
 
   cancelShare(id: string, user: string) {
-    const ticket = tickets[id];
+    const ticket = this.tickets[id];
     if (user !== ticket.owner) {
       throw new Error("sharing can only be cancelled by the owner");
     }
@@ -81,7 +81,7 @@ export class TicketStore {
       throw new Error("ticket has not been shared");
     }
 
-    tickets[id] = {
+    this.tickets[id] = {
       id,
       event: ticket.event,
       owner: ticket.owner,
