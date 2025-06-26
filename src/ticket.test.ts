@@ -3,6 +3,11 @@ import { Ticket, TicketStore } from "./ticket";
 import { setupOtel } from "./tracing";
 import { InMemorySpanExporter } from "@opentelemetry/sdk-trace-base";
 import { Span, trace, Tracer } from "@opentelemetry/api";
+import { withTraces } from "../tracedb/withTraces";
+import { drizzle } from "drizzle-orm/pglite";
+import * as schema from "../tracedb/schema";
+import { PGlite } from "@electric-sql/pglite";
+import { migrate } from "drizzle-orm/pglite/migrator";
 
 describe("basic ticket store operations", () => {
   let ticketStore: TicketStore;
@@ -15,43 +20,39 @@ describe("basic ticket store operations", () => {
   const user2 = "user2Id";
   const user3 = "user3Id";
 
-  beforeAll(() => {
-    const [, _exporter] = setupOtel("test-ticket-provider");
+  const client = new PGlite();
+  const db = drizzle(client, { schema });
+
+  beforeAll(async () => {
+    const [, _exporter] = setupOtel("ticket-service");
     exporter = _exporter as InMemorySpanExporter;
-    tracer = trace.getTracer("test-ticket-provider");
+    tracer = trace.getTracer("ticket-service");
+
+    await migrate(db, { migrationsFolder: "drizzle/" });
   });
 
   beforeEach(() => {
     ticketStore = new TicketStore();
   });
 
-  test("tickets can be added to the ticket store", ({ task }) => {
-    let ticketId: string = "";
-    let ticket: Ticket;
+  test("tickets can be added to the ticket store", async ({ task }) => {
+    const result = await withTraces(db, task, exporter, tracer, () => {
+      const ticketId = ticketStore.createTicket(event, user1);
 
-    tracer.startActiveSpan("add-ticket", (span: Span) => {
-      ticketId = ticketStore.createTicket(event, user1);
-
-      ticket = ticketStore.getTicket(ticketId);
+      const ticket = ticketStore.getTicket(ticketId);
       expect(ticket).toMatchObject({
         id: ticketId,
         owner: user1,
         event: event,
         sharedWith: null,
       });
-
-      span.end();
     });
 
-    const spans = exporter.getFinishedSpans();
-    expect(spans[0].events[0]).toMatchObject({
-      name: "createTicket",
-      attributes: {
-        id: ticketId,
-        owner: user1,
-        event: event,
-      },
-    });
+    expect(
+      await result.spans.with
+        .name("createTicket")
+        .have.attribute("owner", user1)
+    ).toBe(true);
   });
 
   test("tickets can be shared between users", () => {
