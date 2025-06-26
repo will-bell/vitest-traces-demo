@@ -6,9 +6,11 @@
     "test:unit": "vitest src/"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.3",
     "@eslint/js": "^9.29.0",
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.0",
+    "drizzle-kit": "^0.31.2",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.1",
@@ -29,7 +31,10 @@
     "@opentelemetry/sdk-trace-base": "^1.27.0",
     "@opentelemetry/sdk-trace-node": "^1.27.0",
     "@opentelemetry/semantic-conventions": "^1.27.0",
+    "drizzle-orm": "^0.44.2",
     "fastify": "^5.4.0",
-    "typescript-eslint": "^8.34.1"
+    "pg": "^8.16.2",
+    "typescript-eslint": "^8.34.1",
+    "uuid": "^11.1.0"
   }
 }

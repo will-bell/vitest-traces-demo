@@ -25,7 +25,7 @@ describe("basic ticket store operations", () => {
     ticketStore = new TicketStore();
   });
 
-  test("tickets can be added to the ticket store", () => {
+  test("tickets can be added to the ticket store", ({ task }) => {
     let ticketId: string = "";
     let ticket: Ticket;
 
