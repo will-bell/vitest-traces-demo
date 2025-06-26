@@ -1,5 +1,5 @@
 {
-  "id": "84ef04c0-1515-4710-ba94-760e4b91eed8",
+  "id": "b530c09a-359a-4fda-9d0b-63cf4759e1a5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -16,7 +16,7 @@
         },
         "span_id": {
           "name": "span_id",
-          "type": "uuid",
+          "type": "char(16)",
           "primaryKey": false,
           "notNull": true
         },
@@ -41,15 +41,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "span_events_span_id_spans_id_fk": {
-          "name": "span_events_span_id_spans_id_fk",
+        "span_events_span_id_spans_span_id_fk": {
+          "name": "span_events_span_id_spans_span_id_fk",
           "tableFrom": "span_events",
           "tableTo": "spans",
           "columnsFrom": [
             "span_id"
           ],
           "columnsTo": [
-            "id"
+            "span_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -65,21 +65,21 @@
       "name": "spans",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
+        "span_id": {
+          "name": "span_id",
+          "type": "char(16)",
           "primaryKey": true,
           "notNull": true
         },
         "trace_id": {
           "name": "trace_id",
-          "type": "uuid",
+          "type": "char(32)",
           "primaryKey": false,
           "notNull": true
         },
         "parent_id": {
           "name": "parent_id",
-          "type": "uuid",
+          "type": "char(16)",
           "primaryKey": false,
           "notNull": false
         },
