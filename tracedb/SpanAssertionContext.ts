@@ -1,12 +1,12 @@
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { spansTable } from "./schema";
 import { eq, and, SQL } from "drizzle-orm";
+import { Database } from "./types";
 
 export default class SpansAssertionContext {
   private selectors: SQL[];
 
   constructor(
-    private db: NodePgDatabase,
+    private db: Database,
     private testName: string
   ) {
     this.selectors = [];

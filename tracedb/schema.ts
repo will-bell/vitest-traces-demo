@@ -1,9 +1,16 @@
-import { pgTable, uuid, text, jsonb, timestamp } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  jsonb,
+  timestamp,
+  char,
+} from "drizzle-orm/pg-core";
 
 export const spansTable = pgTable("spans", {
-  id: uuid("id").primaryKey(),
-  traceId: uuid("trace_id").notNull(),
-  parentId: uuid("parent_id"),
+  id: char("span_id", { length: 16 }).primaryKey(),
+  traceId: char("trace_id", { length: 32 }).notNull(),
+  parentId: char("parent_id", { length: 16 }),
   name: text("name").notNull(),
   startTime: timestamp("start_time", { withTimezone: true }).notNull(),
   endTime: timestamp("end_time", { withTimezone: true }).notNull(),
@@ -14,7 +21,7 @@ export const spansTable = pgTable("spans", {
 
 export const spanEventsTable = pgTable("span_events", {
   id: uuid("id").primaryKey(),
-  spanId: uuid("span_id")
+  spanId: char("span_id", { length: 16 })
     .notNull()
     .references(() => spansTable.id),
   name: text("name").notNull(),

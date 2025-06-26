@@ -1,10 +1,10 @@
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { spansTable, spanEventsTable } from "./schema";
 import { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { v4 as uuidv4 } from "uuid";
+import { Database, Schema } from "./types";
 
 export async function ingestSpans(
-  db: NodePgDatabase,
+  db: Database,
   testName: string,
   spans: ReadableSpan[]
 ) {
@@ -31,5 +31,7 @@ export async function ingestSpans(
   );
 
   await db.insert(spansTable).values(spanValues).onConflictDoNothing();
-  await db.insert(spanEventsTable).values(eventValues).onConflictDoNothing();
+  if (eventValues.length) {
+    await db.insert(spanEventsTable).values(eventValues).onConflictDoNothing();
+  }
 }

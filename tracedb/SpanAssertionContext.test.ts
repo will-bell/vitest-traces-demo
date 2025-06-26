@@ -1,6 +1,6 @@
-import { test, expect, beforeEach } from "vitest";
+import { test, expect, beforeAll } from "vitest";
 import SpansAssertionContext from "./SpanAssertionContext";
-import { drizzle, PgliteDatabase } from "drizzle-orm/pglite";
+import { drizzle } from "drizzle-orm/pglite";
 import * as schema from "./schema";
 import { randomUUID } from "crypto";
 import { PGlite } from "@electric-sql/pglite";
@@ -9,30 +9,30 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 const client = new PGlite();
 const db = drizzle(client, { schema });
 
-beforeEach(async () => {
+beforeAll(async () => {
   await migrate(db, { migrationsFolder: "drizzle/" });
 });
 
 test("basic assertions", async () => {
-  // 👇 Simulate a span inserted into the database
-  await db.insert(schema.spansTable).values([
-    {
-      id: randomUUID(),
-      traceId: randomUUID(),
-      parentId: null,
-      name: "hello-trace-testing",
-      startTime: new Date(),
-      endTime: new Date(),
-      attributes: { "http.method": "GET" },
-      status: "0",
-      testName: "testName",
-    },
-  ]);
-  // .onConflictDoNothing();
+  await db
+    .insert(schema.spansTable)
+    .values([
+      {
+        id: "051581bf3cb55c13",
+        traceId: "5b8aa5a2d2c872e8321cf37308d69df2",
+        parentId: null,
+        name: "hello-trace-testing",
+        startTime: new Date(),
+        endTime: new Date(),
+        attributes: { "http.method": "GET" },
+        status: "0",
+        testName: "testName",
+      },
+    ])
+    .onConflictDoNothing();
 
-  const spans = new SpansAssertionContext(db as any, "testName");
+  const spans = new SpansAssertionContext(db, "testName");
 
-  // 👇 DSL-style assertion
   const result = await spans.with
     .name("hello-trace-testing")
     .have.attribute("http.method", "GET");

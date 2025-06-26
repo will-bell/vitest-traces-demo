@@ -1,7 +1,7 @@
 import { test, expect, vi } from "vitest";
 import { ingestSpans } from "../tracedb/ingestSpans";
 import { ReadableSpan } from "@opentelemetry/sdk-trace-base";
-import { spans as spansTable, spanEvents } from "../tracedb/schema";
+import { spansTable, spanEventsTable } from "../tracedb/schema";
 
 test("ingestSpans inserts spans and events into the database", async () => {
   const mockInsert = vi.fn(() => ({
@@ -28,7 +28,7 @@ test("ingestSpans inserts spans and events into the database", async () => {
   await ingestSpans(mockDb as any, "trace-test", [span]);
 
   expect(mockInsert).toHaveBeenCalledWith(spansTable);
-  expect(mockInsert).toHaveBeenCalledWith(spanEvents);
+  expect(mockInsert).toHaveBeenCalledWith(spanEventsTable);
 });
 
 function createFakeSpan(partial: Partial<ReadableSpan>): ReadableSpan {
